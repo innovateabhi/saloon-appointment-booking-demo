@@ -9,6 +9,15 @@
   },
   "autoload": {
     "psr-4": {
+      "App\\Config\\": "app/config/",
+      "App\\Controllers\\": "app/controllers/",
+      "App\\Helpers\\": "app/helpers/",
+      "App\\Mail\\": "app/mail/",
+      "App\\Middleware\\": "app/middleware/",
+      "App\\Models\\": "app/models/",
+      "App\\Routes\\": "app/routes/",
+      "App\\Services\\": "app/services/",
+      "App\\Validators\\": "app/validators/",
       "App\\": "app/"
     }
   }

@@ -1,6 +1,29 @@
 <?php
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+    require_once __DIR__ . '/../../vendor/autoload.php';
+}
+
+// Linux case-safe autoloader fallback
+spl_autoload_register(function ($class) {
+    if (str_starts_with($class, 'App\\')) {
+        $relative = substr($class, 4);
+        $parts = explode('\\', $relative);
+        $file = array_pop($parts);
+        $subDir = strtolower(implode('/', $parts));
+        $candidates = [
+            __DIR__ . '/../../app/' . $subDir . '/' . $file . '.php',
+            __DIR__ . '/../../app/' . str_replace('\\', '/', $relative) . '.php',
+            __DIR__ . '/../../app/' . strtolower(str_replace('\\', '/', $relative)) . '.php'
+        ];
+        foreach ($candidates as $cand) {
+            if (file_exists($cand)) {
+                require_once $cand;
+                return;
+            }
+        }
+    }
+});
 
 use App\Config\Config;
 use App\Config\Database;
