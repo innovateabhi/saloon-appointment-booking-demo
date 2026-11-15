@@ -34,6 +34,32 @@ echo "🌿 Running AURELIA Comprehensive Seeder with Affordable & Accessible Rat
 
 $db = Database::getConnection();
 
+// 0. Ensure Roles exist
+$roles = [
+    ['slug' => 'admin', 'name' => 'Owner / Salon Administrator', 'description' => 'Full administrative access across all salon operations'],
+    ['slug' => 'staff', 'name' => 'Stylist / Professional Staff', 'description' => 'Access to assigned appointments, schedule, and guest notes'],
+    ['slug' => 'customer', 'name' => 'Registered Customer', 'description' => 'Booking management, loyalty rewards, and service history'],
+    ['slug' => 'guest', 'name' => 'Guest Visitor', 'description' => 'Public browsing and one-time appointment reservations']
+];
+foreach ($roles as $role) {
+    $stmt = $db->prepare("
+        INSERT INTO roles (slug, name, description)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)
+    ");
+    $stmt->execute([$role['slug'], $role['name'], $role['description']]);
+}
+
+// Ensure default Salon exists
+$stmtSalon = $db->prepare("
+    INSERT INTO salons (id, name, slug, tagline, description, email, phone, address, city, state, postal_code, currency, currency_symbol, timezone, tax_percentage, booking_notice_hours, booking_horizon_days, cancellation_cutoff_hours, is_active)
+    VALUES (1, 'AURELIA — Luxury Hair & Beauty Studio', 'aurelia-luxury-salon', 'Where Haute Coiffure Meets Bespoke Wellness',
+            'A sanctuary of high-end aesthetics, bespoke hair couture, and restorative botanical beauty.',
+            'concierge@aurelia-salon.com', '+91 98765 43210', '42 Royale Boulevard, Indiranagar', 'Bengaluru', 'Karnataka', '560038', 'INR', '₹', 'Asia/Kolkata', 18.00, 2, 60, 4, 1)
+    ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), phone = VALUES(phone)
+");
+$stmtSalon->execute();
+
 // Ensure roles exist
 $adminRoleStmt = $db->query("SELECT id FROM roles WHERE slug = 'admin' LIMIT 1");
 $adminRoleId = $adminRoleStmt->fetchColumn();
