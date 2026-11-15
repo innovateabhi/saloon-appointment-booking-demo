@@ -13,16 +13,20 @@ class CorsMiddleware
 
     public static function handle(): void
     {
-        $frontendUrl = Config::get('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = rtrim((string)Config::get('FRONTEND_URL', 'http://localhost:5173'), '/');
         if (!in_array($frontendUrl, self::$allowedOrigins, true)) {
             self::$allowedOrigins[] = $frontendUrl;
         }
 
-        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        $origin = rtrim($_SERVER['HTTP_ORIGIN'] ?? '', '/');
+        $serverHost = $_SERVER['HTTP_HOST'] ?? '';
+        $isSameHost = !empty($origin) && str_ends_with($origin, $serverHost);
 
-        if (in_array($origin, self::$allowedOrigins, true)) {
-            header("Access-Control-Allow-Origin: {$origin}");
-            header('Access-Control-Allow-Credentials: true');
+        if (in_array($origin, self::$allowedOrigins, true) || $isSameHost || empty($origin) || str_contains($origin, 'duckdns.org')) {
+            if (!empty($origin)) {
+                header("Access-Control-Allow-Origin: {$origin}");
+                header('Access-Control-Allow-Credentials: true');
+            }
             header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
             header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-Token, X-Idempotency-Key');
             header('Access-Control-Max-Age: 86400');
