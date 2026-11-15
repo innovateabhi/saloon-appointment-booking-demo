@@ -28,8 +28,13 @@ class Database
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ];
 
-            $initCmd = defined('PDO::MYSQL_ATTR_INIT_COMMAND') ? PDO::MYSQL_ATTR_INIT_COMMAND : 1002;
-            $options[$initCmd] = "SET NAMES {$charset} COLLATE {$charset}_unicode_ci";
+            if (class_exists('\Pdo\Mysql') && defined('\Pdo\Mysql::ATTR_INIT_COMMAND')) {
+                $options[\Pdo\Mysql::ATTR_INIT_COMMAND] = "SET NAMES {$charset} COLLATE {$charset}_unicode_ci";
+            } elseif (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+                $options[@PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$charset} COLLATE {$charset}_unicode_ci";
+            } else {
+                $options[1002] = "SET NAMES {$charset} COLLATE {$charset}_unicode_ci";
+            }
 
             try {
                 self::$instance = new PDO($dsn, $user, $pass, $options);
